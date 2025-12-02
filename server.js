@@ -55,7 +55,7 @@ app.use(
 );
 
 // Handle preflight OPTIONS for ALL routes
-app.options("*", cors());
+app.options("(.*)", cors());
 
 
 // ----------------------
