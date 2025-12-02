@@ -4,7 +4,7 @@ const axios = require("axios");
 const router = express.Router();
 
 // PUT YOUR N8N WEBHOOK URL (even localhost works, only backend will call)
-const N8N_WEBHOOK = "http://localhost:5678/webhook/a92b422b-c7af-447e-99bd-00eef6366260";
+const N8N_WEBHOOK = process.env.N8N_WEBHOOK;
 
 // Route the frontend will call
 router.post("/chatbot", async (req, res) => {
