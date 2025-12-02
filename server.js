@@ -5,6 +5,11 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const authRoutes = require("./authRoutes");
+const n8nRoutes = require("../jwt-auth-demo/n8nroutes");
+
+
+app.use("/api/chat", n8nRoutes);
+
 
 const app = express();
 
