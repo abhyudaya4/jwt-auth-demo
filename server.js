@@ -2,65 +2,107 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const authRoutes = require("./authRoutes");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const authRoutes = require("./authRoutes");
 
 const app = express();
 
-app.use(helmet());
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100, // 100 requests per 15 min / IP
-}));
-// Middleware
+
+// ----------------------
+// 🔐 SECURITY MIDDLEWARE
+// ----------------------
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+  })
+);
+
+
+// ----------------------
+// 🌐 CORS CONFIG (FINAL FIXED VERSION)
+// ----------------------
 const allowedOrigins = [
+  "https://academyone.netlify.app",
   "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  process.env.FRONTEND_URL,      // Netlify URL in production
-].filter(Boolean);               // remove undefined
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow server-to-server or tools (no origin)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS blocked for origin: " + origin));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Handle preflight OPTIONS for ALL routes
+app.options("*", cors());
 
 
+// ----------------------
+// 📦 BODY PARSER
+// ----------------------
 app.use(express.json());
 
-// Connect to MongoDB
+
+// ----------------------
+// 🔗 MONGODB CONNECTION
+// ----------------------
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/AcademyOne');
-    
-    console.log('✅ MongoDB Connected Successfully');
+    await mongoose.connect(process.env.MONGODB_URI, {
+      dbName: "AcademyOne",
+    });
+
+    console.log("✅ MongoDB Connected Successfully");
     console.log(`📦 Database: ${mongoose.connection.name}`);
   } catch (error) {
-    console.error('❌ MongoDB Connection Error:', error.message);
+    console.error("❌ MongoDB Connection Error:", error.message);
     process.exit(1);
   }
 };
 
 connectDB();
 
-// Routes
+
+// ----------------------
+// 🚪 ROUTES
+// ----------------------
 app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
-  res.json({ 
-    message: "JWT Auth API Running...",
-    endpoints: {
-      register: "POST /api/auth/register",
-      login: "POST /api/auth/login",
-      getUser: "GET /api/auth/me (protected)",
-      updateProfile: "PUT /api/auth/profile (protected)",
-      changePassword: "PUT /api/auth/change-password (protected)"
-    }
+  res.json({
+    message: "AcademyOne API is running 🚀",
+    status: "OK",
   });
 });
 
+
+// ----------------------
+// 🚀 START SERVER
+// ----------------------
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log("🌍 Allowed Origins:", allowedOrigins);
 });
