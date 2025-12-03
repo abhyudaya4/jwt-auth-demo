@@ -8,7 +8,7 @@ const authRoutes = require("./authRoutes");
 const n8nRoutes = require("./n8nroutes");
 
 
-app.use("/api/chat", n8nRoutes);
+
 
 
 const app = express();
@@ -100,6 +100,9 @@ app.get("/", (req, res) => {
     status: "OK",
   });
 });
+
+//n8n route
+app.use("/api/chat", n8nRoutes);
 
 
 // ----------------------
