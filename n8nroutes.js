@@ -11,14 +11,14 @@ const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 
 router.post("/chatbot", authMiddleware, async (req, res) => {
   try {
-    const {userMessage, sessionId} = req.body;
+    const {message, sessionId} = req.body;
     const userId = req.user.id;
 
     if(!sessionId){
       return res.status(400).json({message:"sessionId is required"});
     }
     const response = await axios.post(N8N_WEBHOOK_URL, {
-      userMessage: userMessage,
+      message: message,
       sessionId: sessionId,
       userId: userId,
     });
