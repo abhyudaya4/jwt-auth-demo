@@ -18,7 +18,7 @@ router.post("/chatbot", authMiddleware, async (req, res) => {
       return res.status(400).json({message:"sessionId is required"});
     }
     const response = await axios.post(N8N_WEBHOOK_URL, {
-      message: userMessage,
+      messages: userMessage,
       sessionid: sessionId,
       userid: userId,
     });
